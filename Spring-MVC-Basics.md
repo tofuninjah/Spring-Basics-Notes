@@ -121,13 +121,105 @@ Spring will scan all Classes within the base-package, recursively and automatica
 	// src/sport.properties
 	foo.email=email@myemail.com
 	foo.team=Silly Java Coders
-	
+	.
 	// applicationContext.xml
 	// just after the <context:component-scan .../>
-	<context:property-placeholder location="claspath:sport.properties"/>
-	
+	<context:property-placeholder location="claspath:sport.properties"/	
+	.
 	// SwimCoach.java
 	@Value("${foo.email}")
 	private String email;
 	@Value("{foo.team}")
 	private String team;
+
+### Bean Lifecycle with Annotations
+
+* Custom code during **bean initialization** or **bean destruction** 
+* Custom business logic methods
+* Setting up handles to resources (db, sockets, file, etc...)
+
+1. Define your methods for *init* and *destroy*
+2. Add annotations: *@PostConstruct* and *@PreDestroy*
+3. void is the most common return type
+4. Cannot accept any arguments
+
+Configuration:
+
+	@Component
+	public class TennisCoach implements Coach {
+	    @PostConstruct
+	    public void doMyStartupStuff() { ... }
+	    @PreDestroy
+	    public void doMyCleanupStuff() { ... }
+	}
+
+### Pure Java Configuration
+
+To review: 1. Full XML Config, 2. XML Component Scan, 3. Java Configuration Class (No XML!)
+
+1. Create Java class and annotate as @Configuration
+2. Add component scanning support: @ComponentScan (optional)
+3. Read Spring Java configuration class
+4. Retrieve bean from Spring container
+
+Example:
+
+    // Step 1 -> Add @Configuration to SportConfig
+    @Configuration
+    public class SportConfig {
+    	...
+    }
+    .
+    // Step 2 -> Add @ComponentScan to SportConfig
+    @Configuration
+    @ComponentScan("com.packange.name")
+    public class SportConfig {
+    	...
+    }
+    .
+    // Step 3 -> Read Spring Java configuration
+    AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(SportConfig.class);
+    .
+    // Step 4 -> Retrieve bean from Spring Container
+    Coach theCoach = context.getBean("tennisCoach", Coach.class);
+
+##### Define Spring Beans with Java Code
+
+1. Define method to expose bean
+2. Inject bean dependencies
+3. Read Spring java configuration class
+4. Retrieve bean from Spring container
+	
+Example:
+
+	// Step 1 -> Define method to expose bean
+	@Configuration
+	public class SportConfig {
+        @Bean
+        public Coach swimCoach() { // Bean Id
+            SwimCoach mySwimCoach = new SwimCoach();
+            return mySwimCoach;
+        }
+	}
+	.
+	// Step 2 -> Inject the bean dependencies
+	@Configuration
+	public class SportConfig {
+		@Bean
+		public FortuneService happyFortuneService() { // bean id
+            return new HappyFortuneService();
+		}
+        @Bean
+        public Coach swimCoach() { // Bean Id
+            SwimCoach mySwimCoach = new SwimCoach( happyFortuneService() );
+            return mySwimCoach;
+        }
+	}
+	.
+	// Step 3 -> Read Spring Java configuration class
+	AnnotationConfigApplicationContext context = new AnnotationConfigAplicationContext(SprtConfig.class);
+    .
+    // Step 4 -> Retrieve bean form Spring Container
+    Coach theCoach = context.getBean("swimCoach", Coach.class);
+    
+**Here we defined two Beans and injected the dependencies**
