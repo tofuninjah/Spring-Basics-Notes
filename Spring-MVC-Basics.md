@@ -93,4 +93,41 @@ Spring will scan all Classes within the base-package, recursively and automatica
 	    // No need for setter methdos ...
 	}
 
-### !!!	
+### Annotation Autowiring and Qualifiers
+	* Fortune Service
+		- HappyFortuneService
+		- RandomFortuneService
+		- DatabaseFortuneService
+		- RESTFortuneService	
+	* NoUniqueBeanDefinitionException
+		- No qualifying bean of type FortuneService is defined: expected single matching bean but found 4: HappyFortuneService, RandomFortuneService, DatabaseFortuneService, RESTFortuneService
+
+**We will need to tell Spring which bean to use... with @Qualifier**
+
+    @Component
+    public class TennisCoach implements Coach {
+    	@Autowired
+    	@Qualifier("happyFortuneService") // Bean id, or component
+    	private FortuneService fortuneService;
+    	...
+    }
+
+**@Qualifier can be used with all 3 (Constructor, Setter, Field) Injection types (Only Constructors need to have it inside the parenthesis!)**
+
+	public TennisCoach(@Qualifier("randomFortuneService") FortuneService theFortuneService) {}
+
+### Injecting Values from  properties file using Java annotations
+
+	// src/sport.properties
+	foo.email=email@myemail.com
+	foo.team=Silly Java Coders
+	
+	// applicationContext.xml
+	// just after the <context:component-scan .../>
+	<context:property-placeholder location="claspath:sport.properties"/>
+	
+	// SwimCoach.java
+	@Value("${foo.email}")
+	private String email;
+	@Value("{foo.team}")
+	private String team;
