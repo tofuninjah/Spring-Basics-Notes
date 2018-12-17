@@ -377,6 +377,144 @@ import com.plainspringmvc.demo.validation.CourseCode;
 private String courseCode;
 ```
 
+### Hibernate Annotations
+
+**Java class is camelCase, while Database table is _underscored_**
+Step 1 => Map class to Database table
+Step 2 => Map fields to database columns
+
+```java
+package com.hibernating.entity;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+@Entity
+@Table(name="student")
+public class Student {
+	
+	@Id
+	@Column(name="id")
+	private int id;
+	
+	@Column(name="first_name")
+	private String firstName;
+	
+	@Column(name="last_name")
+	private String lastName;
+	
+	@Column(name="email")
+	private String email;
+	
+	public Student() {}
+
+	public Student(String firstName, String lastName, String email) {
+		this.firstName = firstName;
+		this.lastName = lastName;
+		this.email = email;
+	}
+
+	public int getId() {
+		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
+	}
+
+	public String getFirstName() {
+		return firstName;
+	}
+
+	public void setFirstName(String firstName) {
+		this.firstName = firstName;
+	}
+
+	public String getLastName() {
+		return lastName;
+	}
+
+	public void setLastName(String lastName) {
+		this.lastName = lastName;
+	}
+
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
+	}
+
+	@Override
+	public String toString() {
+		return "Student [id=" + id + ", firstName=" + firstName + ", lastName=" + lastName + ", email=" + email + "]";
+	}
+
+}
+```
+
+### Creating and saving Objects
+
+**Two Key Players**
+1. SessionFactory
+	- Reads the hibernate config file
+	- Creates Session objects
+	- Heavy-weight object
+	- Only create once in your app
+2. Session
+	- Wrapper around  a JDBC connection 
+	- Short-lived
+	- Main object used to save/retrieve objects
+	- Retrieved from SessionFactory
+
+```java
+public static void main(String[] args) {
+    SessionFactory factory = new Configuration()
+    	.configure("hibernate.cfg.xml")
+    	.addAnnotatedClass(Student.class)
+    	.buildSessionFactory();
+    	
+    Session session = factory.getCurrentSession();
+    
+    try  {
+        // Now use the session object to save/retrieve Java objects
+        
+        // Create a student object
+        Student tempStudent = new Student("Paul", "Wall", "paul@luv2code.com");
+        
+        // Start transaction
+        session.beginTransaction();
+        
+        // Save the student
+        session.save(tempStudent);
+        
+        // Commit the transaction
+        session.getTransaction().commit();
+        
+    } finally {
+        factory.close();
+    }
+}
+```
+
+### Hibernate Identity
+
+Options
+	- GenerationType.AUTO
+	- GenerationType.IDENTITY
+	- GenerationType.SEQUENCE
+	- GenerationType.TABLE
+
+```java
+@GeneratedValue(strategy=GenerationType.IDENTITY)
+```
+
+
+
+
 
 
 
