@@ -503,14 +503,119 @@ public static void main(String[] args) {
 ### Hibernate Identity
 
 Options
-	- GenerationType.AUTO
-	- GenerationType.IDENTITY
-	- GenerationType.SEQUENCE
-	- GenerationType.TABLE
+​	- GenerationType.AUTO
+​	- GenerationType.IDENTITY
+​	- GenerationType.SEQUENCE
+​	- GenerationType.TABLE
 
 ```java
 @GeneratedValue(strategy=GenerationType.IDENTITY)
 ```
+
+### Retrieving an Object with Hibernate
+
+```java
+try {
+	Student tempStudent = new Student("Daffy", "Duck", "daffy@duck.com");
+
+	System.out.println(tempStudent);
+
+	// Start transaction
+	session.beginTransaction();
+
+	// Save the student
+	session.save(tempStudent);
+
+	// Commit the transaction
+	session.getTransaction().commit();
+
+	// New Code: Retrieve object from Database
+	System.out.println("Saved student. Generated id: " + tempStudent.getId());
+
+	// Now get a new session
+	session = factory.getCurrentSession();
+	session.beginTransaction();
+
+	// retrieve student based on the id: primary key
+
+	Student myStudent = session.get(Student.class, tempStudent.getId());
+
+	// Commit on transaction
+	session.getTransaction().commit();
+	System.out.println("Done!");
+
+} finally {
+	factory.close();
+}
+```
+
+### Querying with Hibernate
+
+```java
+// Get list of Students
+List<Student> theStudents = session.createQuery("from Student").getresultsList();
+
+// Where clause - use Java property name, not column name! ex: lastName, not last_name.
+List<Student> theStudents = session.createQuery("from Student s where s.lastName = 'Doe'").getresultsList();
+
+// Predicates | OR 
+List<Student> theStudents = session.createQuery("from Student s where s.lastName = 'Doe'" + " OR s.firstName='Daffy'").getresultsList();
+
+// Likes
+List<Student> theStudents = session.createQuery("from Student s where" + " s.email LIKE '%example.com'").getresultsList();
+```
+
+### Updating Objects
+
+Updating a single Student
+```java
+int studentId = 1;
+
+Student myStudent = session.get(Student.class, studentId);
+
+// Update first name to "Scooby"
+myStudent.setFirstName("Scooby");
+
+// Commit the transaction
+session.getTransaction().commit();
+```
+
+Updating email for ALL students
+```java
+session.createQuery("update Student set email='foo@gmail.com'")
+	.executeUpdate();
+```
+
+* executeUpdate() is used for updates OR deletes
+
+### Deleting Objects
+
+Delete a single student
+```java
+int studentId = 2;
+
+Student myStudent = session.get(Student.class, studentId);
+
+// Delete the student
+session.delete(myStudent);
+
+// Commit the transaction
+session.getTransaction().commit();
+```
+
+Another way
+```java
+session.createQuery("delete from Student where id = 2")
+	.executeUpdate();
+```
+
+* executeUpdate() is used for updates OR deletes
+
+
+
+
+
+
 
 
 
