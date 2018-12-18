@@ -611,6 +611,207 @@ session.createQuery("delete from Student where id = 2")
 
 * executeUpdate() is used for updates OR deletes
 
+### Advanced Mappings
+
+1. One-to-One
+2. One-to-Many, Many-to-One
+3. Many-to-Many
+
+Hibernate One-to-One
+
+```mysql
+DROP SCHEMA IF EXISTS `hb-01-one-to-one-uni`;
+
+CREATE SCHEMA `hb-01-one-to-one-uni`;
+
+use `hb-01-one-to-one-uni`;
+
+SET FOREIGN_KEY_CHECKS = 0;
+
+DROP TABLE IF EXISTS `instructor_detail`;
+
+CREATE TABLE `instructor_detail` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `youtube_channel` varchar(128) DEFAULT NULL,
+  `hobby` varchar(45) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
+
+DROP TABLE IF EXISTS `instructor`;
+
+CREATE TABLE `instructor` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `first_name` varchar(45) DEFAULT NULL,
+  `last_name` varchar(45) DEFAULT NULL,
+  `email` varchar(45) DEFAULT NULL,
+  `instructor_detail_id` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `FK_DETAIL_idx` (`instructor_detail_id`),
+  CONSTRAINT `FK_DETAIL` FOREIGN KEY (`instructor_detail_id`) REFERENCES `instructor_detail` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
+
+SET FOREIGN_KEY_CHECKS = 1;
+```
+
+instructor_detail
+```java
+@Entity
+@Table(name="instructor_detail")
+public class InstructorDetail {
+    @Id
+    @GeneratedValue(Strategy=GenerationType.IDENTITY)
+    @Column(name="id")
+    private int id;
+    
+    @Column(name="youtube_channel")
+    private String yourubeChannel;
+    
+    @Column(name="hobby")
+    private String hobby;
+    
+    // Constructors
+    
+    // Getters/ Setters    
+}
+```
+
+instructor
+```java
+@Entity
+@Table(name="instructor")
+public clas Instructor {
+    ...
+    @oneToOne
+    @JoinColumn(name="instructor_detail_id")
+    private InstructorDetail instructorDetail;
+    ...
+    
+    // Constructors, getters / setters
+}
+```
+
+### Cascade Types
+
+* **Persist**
+  - If entity is persisted / saved, related entity will also be persisted
+* **Remove**
+  - If entity is removed /deleted, related entity will also be deleted
+* **Refresh**
+  - If entity is refreshed, related entity will also be refreshed
+* **Detach**
+  - If entity is detached (not associated w/ session), then related entity will also be detached.
+* **Merge**
+  - If entity is merged, then related entity will also be merged
+* **All**
+  - All of the above cascade types
+
+instructor - cascade type example and ONE way association
+```java
+@Entity
+@Table(name="instructor")
+public clas Instructor {
+    ...
+    @oneToOne(cascade=CascadeType.ALL)
+    @JoinColumn(name="instructor_detail_id")
+    private InstructorDetail instructorDetail;
+    ...
+    
+    // Constructors, getters / setters
+}
+```
+
+###### Putting it together
+
+```java
+public static void main(String[] args) {
+    // Create the objects
+    Instructor tempInstructor = new Instructor("Chad", "Darby", "darby@luv2code.com");
+    
+    InstructorDetail tempInstructorDetail = new Instructor("Chung", "Kang", "chung@myemail.com");
+    
+    // Associate the objects
+    tempInstructor.setInstructorDetail(tempInstructorDetail);
+    
+    // Start the transaction
+    session.beginTransaction();
+    
+    session.save(tempInstructor);
+    
+    // Commit transaction
+    session.getTransaction().commit();
+}
+```
+
+###### mappedby
+
+**Use case: If we load an InstructorDetail object, but need to get the asociated Instructor**
+
+Refers to "instructorDetail" property in the "Instructor" class
+```java
+@OneToOne(mappedBy="instructorDetail")
+private Instructor instructor;
+```
+
+mappedBy
+* Tells Hibernate to look at the instructorDetail property in the Instructor class
+* Use the information from the Instructor class @JoinColumn `@JoinColumn(name="instructor_detail_id")`
+* To help find associated instructor
+* If we add both JoinedColumn (to Instructor) and add mappedBy (to Instructor Details), it will now be Bi-Directional
+
+**What's the difference between @OneToMany@JoinColumn(mappedBy="someId") and @OneToMany@JoinCoumn(name="someId")?**
+
+	- The annotation @JoinColumn indicates that this entity is the owner of the relationship (that is: the corresponding table has a column with a foreign key to the referenced table), whereas the attribute mappedBy indicates that the entity in this side is the inverse of the relationship, and the owner resides in the "other" entity. This also means that you can access the other table from the class which you've annotated with "mappedBy" (fully bidirectional relationship).
+
+###### Putting it together
+
+```java
+@Entity
+@Table(name="instructor_detail")
+public class InstructorDetail {
+    
+    @OneToOne(mappedBy="instructorDetail", cascade=CascadeType.ALL)
+    private Instructor instructor;
+    
+    @Id
+    @GeneratedValue(Strategy=GenerationType.IDENTITY)
+    @Column(name="id")
+    private int id;
+    
+    @Column(name="youtube_channel")
+    private String yourubeChannel;
+    
+    @Column(name="hobby")
+    private String hobby;
+    
+    // Add new field for instructor (also add getter/setters)
+    private Instructor instructor;
+    
+    public Instructor getInstructor() {
+        return instructor;
+    }
+    
+    public void setInstructor(Instructor instructor) {
+        this.instructor = instructor;
+    }
+    
+    public InstructorDetail() {
+        
+    }
+    
+    public InstructorDetail(String youtubeChannel, String hobby) {
+        this.youtubeChannel = youtubeChannel;
+        this.hobby = hobby;
+    }
+    
+}
+```
+
+### Many-to-One
+
+
+
+
+
 
 
 
