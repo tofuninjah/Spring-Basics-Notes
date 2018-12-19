@@ -835,3 +835,46 @@ private Instructor instructor;
 ###### Retrieve lazy data using
 * Option 1: session.get and call appropriate getter method(s)
 * Option 2: Hibernate query with HQL
+
+### ManyToMany
+
+**Course can have many Students, and Students can have many courses**
+
+###### Course.java
+```java
+@Entity
+@Table(name="course")
+public class Course {
+	@JoinTable(
+		name="course_student", // Join Table
+		joinColumns=@JoinColumn(name="course_id"),
+		inverseJoinColumns=@JoinColumn(name="student_id")
+	)
+
+	private List<Student> students
+
+	// Getters and Setters...
+}
+```
+* The @JoinTable
+	- Look at the course_id column in the course_student table
+	- For the Other Side (_inverse_), look at the student_id column in the course_student table.
+	- Use this information to find the relationship between course and students.
+	- "Inverse" refers to the "other side" of the relationship
+
+###### Student.java
+```java
+@Entity
+@Table(name="student")
+public class Student {
+	@JoinTable(
+		name="course_student", // Join Table
+		joinColumns=@JoinColumn(name="student_id"),
+		inverseJoinColumns=@JoinColumn(name="course_id")
+	)
+
+	private List<Course> course
+
+	// Getters and Setters...
+}
+```
