@@ -705,6 +705,11 @@ public clas Instructor {
 * **All**
   - All of the above cascade types
 
+**Do not apply cascading deletes with the following...**
+```java
+@OneToMany(mappedBy="instructor", cascade= {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.DETACH, CascadeType.REFRESH})
+```
+
 instructor - cascade type example and ONE way association
 ```java
 @Entity
@@ -806,23 +811,27 @@ public class InstructorDetail {
 }
 ```
 
-### Many-to-One
+### Eager vs Lazy Loading
 
+**Default Fetch Types**
+* @OneToOne
+	- FetchType.EAGER	
+* @OneToMany
+	- FetchType.LAZY 
+* @ManyToOne
+	- FetchType.EAGER
+* @ManyToMany
+	- FetchType.LAZY
 
+```java
+@ManyToOne(fetch=FetchType.LAZY)
+@JoinColumn(name="instructor_id")
+private Instructor instructor;
+```
 
+###### LazyLoading (needs an open Hibernate session)
+- If the Hibernate session is closed, and you attempt to retrieve lazy data, Hibernate will throw an exception
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+###### Retrieve lazy data using
+* Option 1: session.get and call appropriate getter method(s)
+* Option 2: Hibernate query with HQL
