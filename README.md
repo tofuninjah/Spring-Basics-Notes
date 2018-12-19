@@ -1,3 +1,3 @@
 # Spring-Basics-Notes
 
-Some notes on Spring Frameworks!
+Some notes on Spring Framework!
